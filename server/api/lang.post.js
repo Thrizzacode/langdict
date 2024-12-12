@@ -14,7 +14,7 @@ export default defineEventHandler(async (event) => {
     }
 
     await Lang.create(data);
-    return { message: "Language code添加成功", data };
+    return { message: "LangCode添加成功", data };
   } catch (error) {
     return createError({
       statusCode: error.statusCode || 500,
