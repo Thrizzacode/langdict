@@ -58,7 +58,7 @@ const form = ref({
 const addLangCode = async () => {
   console.log(form.value);
   try {
-    const data = await $fetch("http://localhost:3000/api/lang", {
+    const data = await $fetch("/api/lang", {
       method: "POST",
       body: {
         ...form.value,
@@ -81,7 +81,7 @@ const addLangCode = async () => {
 };
 
 const fetchLangs = async () => {
-  const data = await $fetch("http://localhost:3000/api/lang");
+  const data = await $fetch("/api/lang");
   console.log(data);
   tableData.value = data;
 };
