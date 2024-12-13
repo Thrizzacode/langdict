@@ -8,7 +8,6 @@ export default defineEventHandler(async (event) => {
 
     const { text: en } = await translate(data.zhCN, { to: "en" });
     data.en = en;
-    console.log("body", data);
     const existLangCode = await Lang.findOne({ langCode });
     if (existLangCode) {
       throw createError({

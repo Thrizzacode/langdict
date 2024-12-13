@@ -1,26 +1,16 @@
 import mongoose from "mongoose";
 
 // 建立 Schema
-const userSchema = new mongoose.Schema(
-  {
-    name: {
-      type: "string",
-      required: true,
-    },
-    email: {
-      type: "string",
-      required: true,
-      unique: true,
-    },
-    pwd: {
-      type: "string",
-      required: true,
-    },
+const userSchema = new mongoose.Schema({
+  name: {
+    type: "string",
+    required: true,
   },
-  {
-    versionKey: false,
-  }
-);
+  pwd: {
+    type: "string",
+    required: true,
+  },
+});
 
 // 建立 Model
 const User = mongoose.model("User", userSchema);
