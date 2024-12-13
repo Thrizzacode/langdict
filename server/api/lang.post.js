@@ -1,9 +1,13 @@
 import Lang from "@/server/models/lang";
+import { translate } from "@vitalets/google-translate-api";
 
 export default defineEventHandler(async (event) => {
   try {
     const data = await readBody(event);
     const langCode = data.langCode;
+
+    const { text: en } = await translate(data.zhCN, { to: "en" });
+    data.en = en;
     console.log("body", data);
     const existLangCode = await Lang.findOne({ langCode });
     if (existLangCode) {

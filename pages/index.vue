@@ -4,7 +4,7 @@
       <el-header>
         <h2>Lang Dict</h2>
         <div>
-          <el-button type="primary" @click="addDialog = true"
+          <el-button type="primary" @click="showAddDialog()"
             >添加LangCode</el-button
           >
           <el-button type="warning" @click="exportJSON">輸出JSON</el-button>
@@ -15,20 +15,17 @@
           <el-table-column prop="langCode" label="LangCode" />
           <el-table-column prop="zhCN" label="zh-CN" />
           <el-table-column prop="en" label="en" />
-          <el-table-column label="Action">
+          <el-table-column label="操作">
             <template #default="scope">
-              <!-- <el-button
-                size="small"
-                @click="handleEdit(scope.$index, scope.row)"
-              >
-                Edit
-              </el-button> -->
+              <el-button size="small" @click="showEditDialog(scope.row)">
+                編輯
+              </el-button>
               <el-button
                 size="small"
                 type="danger"
                 @click="handleDelete(scope.$index, scope.row)"
               >
-                Delete
+                燒毀
               </el-button>
             </template>
           </el-table-column>
@@ -36,7 +33,7 @@
       </el-main>
     </el-container>
 
-    <el-dialog v-model="addDialog" title="添加LangCode" width="500">
+    <el-dialog v-model="langDialog" :title="title" width="500">
       <el-form :model="form">
         <el-form-item label="LangCode" :label-width="formLabelWidth">
           <el-input v-model="form.langCode" autocomplete="off" />
@@ -44,14 +41,18 @@
         <el-form-item label="zhCN" :label-width="formLabelWidth">
           <el-input v-model="form.zhCN" autocomplete="off" />
         </el-form-item>
-        <el-form-item label="en" :label-width="formLabelWidth">
-          <el-input v-model="form.en" autocomplete="off" />
-        </el-form-item>
+        <template v-if="isEdit">
+          <el-form-item label="en" :label-width="formLabelWidth">
+            <el-input v-model="form.en" autocomplete="off" />
+          </el-form-item>
+        </template>
       </el-form>
       <template #footer>
         <div class="dialog-footer">
-          <el-button @click="handleAdd">康糞</el-button>
-          <el-button type="primary" @click="dialogVisible = false">
+          <el-button @click="isEdit ? handleEdit() : handleAdd()"
+            >康糞</el-button
+          >
+          <el-button type="primary" @click="langDialog = false">
             砍手
           </el-button>
         </div>
@@ -60,24 +61,41 @@
   </div>
 </template>
 
-<script lang="ts" setup>
+<script setup>
 import JSZip from "jszip";
 
 const tableData = ref([]);
-const addDialog = ref(false);
+const langDialog = ref(false);
+const title = ref("添加LangCode");
+const isEdit = ref(false);
 const formLabelWidth = ref("120px");
 const form = ref({
   langCode: "",
   zhCN: "",
   en: "",
 });
-// const tableData = [
-//   {
-//     langCode: "F00001",
-//     zhCN: "嗨",
-//     en: "Hi",
-//   },
-// ];
+
+const resetForm = () => {
+  form.value = {
+    langCode: "",
+    zhCN: "",
+    en: "",
+  };
+};
+const showAddDialog = () => {
+  isEdit.value = false;
+  langDialog.value = true;
+  title.value = "添加LangCode";
+  resetForm();
+};
+
+const showEditDialog = (row) => {
+  console.log(row);
+  isEdit.value = true;
+  langDialog.value = true;
+  title.value = "修改LangCode";
+  form.value = { ...row };
+};
 
 const handleAdd = async () => {
   console.log(form.value);
@@ -89,7 +107,7 @@ const handleAdd = async () => {
       },
     });
     console.log(data);
-    addDialog.value = false;
+    langDialog.value = false;
     fetchLangs();
     ElMessage({
       message: "添加成功",
@@ -104,6 +122,33 @@ const handleAdd = async () => {
   }
 };
 
+// 編輯
+const handleEdit = async () => {
+  console.log(form.value);
+  try {
+    const data = await $fetch(`/api/lang/${form.value.langCode}`, {
+      method: "PUT",
+      body: {
+        ...form.value,
+      },
+    });
+    console.log(data);
+    langDialog.value = false;
+    fetchLangs();
+    ElMessage({
+      message: "修改成功",
+      type: "success",
+    });
+  } catch (error) {
+    ElMessage({
+      message: error.data.message,
+      type: "error",
+      customClass: "error-message",
+    });
+  }
+};
+
+// 刪除
 const handleDelete = async (index, row) => {
   console.log(index, row);
   try {
@@ -125,12 +170,14 @@ const handleDelete = async (index, row) => {
   }
 };
 
+// 取得資料
 const fetchLangs = async () => {
   const data = await $fetch("/api/lang");
   console.log(data);
   tableData.value = data;
 };
 
+// 輸入語系包
 const exportJSON = async () => {
   const zip = new JSZip();
 
@@ -143,7 +190,7 @@ const exportJSON = async () => {
     enContent[code] = item.en;
   });
 
-  zip.file("zhCN.json", JSON.stringify(zhCNContent, null, 2));
+  zip.file("zh-CN.json", JSON.stringify(zhCNContent, null, 2));
   zip.file("en.json", JSON.stringify(enContent, null, 2));
 
   // 生成壓縮檔並觸發下載

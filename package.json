@@ -10,6 +10,7 @@
     "postinstall": "nuxt prepare"
   },
   "dependencies": {
+    "@vitalets/google-translate-api": "^9.2.0",
     "jszip": "^3.10.1",
     "nuxt": "^3.14.1592",
     "vue": "latest",
