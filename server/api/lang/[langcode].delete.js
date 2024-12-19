@@ -6,7 +6,7 @@ export default defineEventHandler(async (event) => {
     console.log("body", langCode);
 
     await Lang.deleteOne({ langCode });
-    return { message: "LangCode添加成功" };
+    return { message: "LangCode刪除成功" };
   } catch (error) {
     return createError({
       statusCode: error.statusCode || 500,

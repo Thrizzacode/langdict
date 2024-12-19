@@ -13,6 +13,20 @@ const langSchema = new mongoose.Schema({
   en: {
     type: "string",
   },
+  createdDate: {
+    type: "Date",
+    default: Date.now,
+    required: true,
+  },
+  updatedDate: {
+    type: "Date",
+    default: Date.now,
+  },
+});
+
+langSchema.pre("findOneAndUpdate", function (next) {
+  this.set({ updatedDate: Date.now() });
+  next();
 });
 
 // 建立 Model

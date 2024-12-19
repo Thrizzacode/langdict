@@ -35,9 +35,8 @@ const register = () => {
 
 // 登入
 const login = async () => {
-  const isLogin = useCookie("isLogin", { maxAge: 60 });
-  const username = useCookie("username", { maxAge: 60 });
-  console.log(form.value);
+  const isLogin = useCookie("isLogin", { maxAge: 60 * 60 });
+  const username = useCookie("username", { maxAge: 60 * 60 });
   try {
     const data = await $fetch("/api/login", {
       method: "POST",

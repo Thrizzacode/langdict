@@ -1,9 +1,9 @@
-import Lang from "@/server/models/lang";
+import Proxy from "../models/proxy";
 
 export default defineEventHandler(async (event) => {
   try {
-    const lang = await Lang.find().sort({ updatedDate: -1 });
-    return lang;
+    const proxyList = await Proxy.find();
+    return proxyList;
   } catch (error) {
     return createError(error);
   }

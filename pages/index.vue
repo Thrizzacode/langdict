@@ -11,6 +11,9 @@
           <h2>小小魔法書</h2>
         </div>
         <div class="right-nav">
+          <el-button type="primary" @click="proxyDialog = true"
+            >Check Proxy List</el-button
+          >
           <el-button type="primary" @click="showAddDialog()">添加</el-button>
           <el-button type="warning" @click="exportJSON">輸出JSON</el-button>
           <el-dropdown>
@@ -27,7 +30,6 @@
         <el-scrollbar ref="scrollHeight">
           <ClientOnly>
             <el-table
-              v-loading="tableData.length === 0"
               :data="tableData"
               style="width: 100%"
               border
@@ -86,6 +88,30 @@
         </div>
       </template>
     </el-dialog>
+
+    <el-dialog v-model="proxyDialog" title="檢查Proxy" width="500">
+      <div style="margin-bottom: 10px">
+        來源:
+        <a href="https://free-proxy-list.net/" target="_blank"
+          >Free Proxy List</a
+        >
+      </div>
+      <el-input
+        v-loading="isFetchProxyList"
+        v-model="proxyList"
+        autocomplete="off"
+        type="textarea"
+        :autosize="{ minRows: 2, maxRows: 20 }"
+      />
+      <template #footer>
+        <div class="dialog-footer">
+          <el-button @click="checkProxyList()">康糞</el-button>
+          <el-button type="primary" @click="proxyDialog = false">
+            砍手
+          </el-button>
+        </div>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
@@ -95,6 +121,7 @@ import JSZip from "jszip";
 const scrollHeight = ref(null);
 const tableData = ref([]);
 const langDialog = ref(false);
+const proxyDialog = ref(false);
 const title = ref("添加LangCode");
 const isEdit = ref(false);
 const ruleForm = ref(null);
@@ -136,6 +163,14 @@ const showEditDialog = (row) => {
 };
 
 const handleAdd = async (formEl) => {
+  if (proxyList.value.length === 0) {
+    ElMessage({
+      message: "請檢查Proxy List",
+      type: "error",
+      customClass: "error-message",
+    });
+    return;
+  }
   if (!formEl) return;
   await formEl.validate(async (valid, fields) => {
     if (valid) {
@@ -144,6 +179,7 @@ const handleAdd = async (formEl) => {
           method: "POST",
           body: {
             ...form.value,
+            proxyList: proxyList.value.split("\n"),
           },
         });
         console.log(data);
@@ -223,6 +259,13 @@ const fetchLangs = async () => {
   tableData.value = data;
 };
 
+//取得proxyList
+const fetchProxyList = async () => {
+  const data = await $fetch("/api/proxy");
+  console.log(data[0]);
+  proxyList.value = data[0].proxylist.join("\n");
+};
+
 // 輸入語系包
 const exportJSON = async () => {
   const zip = new JSZip();
@@ -250,6 +293,37 @@ const exportJSON = async () => {
   });
 };
 
+// 檢查代理
+const isFetchProxyList = ref(false);
+const proxyList = ref([]);
+const checkProxyList = async () => {
+  try {
+    console.log(proxyList.value);
+    proxyDialog.value = true;
+    isFetchProxyList.value = true;
+    const data = await $fetch("/api/checkproxy", {
+      method: "POST",
+      body: {
+        proxyList: proxyList.value.split("\n"),
+      },
+    });
+    ElMessage({
+      message: "檢查完成，請查看console",
+      type: "success",
+    });
+    isFetchProxyList.value = false;
+    proxyList.value = data.proxyList.join("\n");
+    console.log(data.proxyList);
+  } catch (error) {
+    ElMessage({
+      message: error.data.message,
+      type: "error",
+      customClass: "error-message",
+    });
+  }
+};
+
+// 登出
 const isLogin = useCookie("isLogin");
 const username = useCookie("username");
 const logout = () => {
@@ -260,6 +334,7 @@ const logout = () => {
 
 onMounted(() => {
   fetchLangs();
+  fetchProxyList();
 });
 </script>
 
