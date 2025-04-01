@@ -16,7 +16,7 @@
           >
           <el-button type="primary" @click="showAddDialog()">添加</el-button>
           <el-button type="warning" @click="exportJSON">輸出JSON</el-button>
-          <el-dropdown>
+          <el-dropdown style="margin-left: 12px">
             <el-avatar> <Icon name="emojione:alien" size="24" /> </el-avatar>
             <template #dropdown>
               <el-dropdown-menu>
@@ -208,8 +208,9 @@ const handleAdd = async (formEl) => {
 
 // 編輯
 const handleEdit = async () => {
+  console.log(form.value._id);
   try {
-    const data = await $fetch(`/api/lang/${form.value.langCode}`, {
+    const data = await $fetch(`/api/lang/${form.value._id}`, {
       method: "PUT",
       body: {
         ...form.value,
@@ -233,8 +234,9 @@ const handleEdit = async () => {
 
 // 刪除
 const handleDelete = async (index, row) => {
+  console.log(row);
   try {
-    const data = await $fetch(`/api/lang/${row.langCode}`, {
+    const data = await $fetch(`/api/lang/${row._id}`, {
       method: "DELETE",
     });
     console.log(data);
@@ -269,6 +271,19 @@ const fetchProxyList = async () => {
 // 輸入語系包
 const exportJSON = async () => {
   const zip = new JSZip();
+  const date = new Date();
+  const formattedDate =
+    date.getFullYear() +
+    "-" +
+    ("0" + (date.getMonth() + 1)).slice(-2) +
+    "-" +
+    ("0" + date.getDate()).slice(-2) +
+    " " +
+    ("0" + date.getHours()).slice(-2) +
+    ":" +
+    ("0" + date.getMinutes()).slice(-2) +
+    ":" +
+    ("0" + date.getSeconds()).slice(-2);
 
   const zhCNContent = {};
   const enContent = {};
@@ -287,7 +302,7 @@ const exportJSON = async () => {
     const url = URL.createObjectURL(content);
     const link = document.createElement("a");
     link.href = url;
-    link.download = "langs.zip";
+    link.download = `${formattedDate}.zip`;
     link.click();
     URL.revokeObjectURL(url);
   });
@@ -366,6 +381,5 @@ onMounted(() => {
 .right-nav {
   display: flex;
   align-items: center;
-  gap: 10px;
 }
 </style>

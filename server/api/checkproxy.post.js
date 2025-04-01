@@ -43,7 +43,11 @@ export default defineEventHandler(async (event) => {
   const filteredProxyList = await run(PROXY_LIST);
   // 再次檢查確保地址能使用
   validProxyList = await run(filteredProxyList);
-  await Proxy.create({ proxylist: validProxyList });
+  await Proxy.findOneAndUpdate(
+    {},
+    { proxylist: validProxyList },
+    { upsert: true }
+  );
 
   return { message: "檢查完畢", proxyList: validProxyList };
 });

@@ -1,4 +1,5 @@
 import Lang from "@/server/models/lang";
+import capitalizeFirstLetter from "@/utils/capitalizeFirstLetter.js";
 import { translate } from "@vitalets/google-translate-api";
 import { HttpProxyAgent } from "http-proxy-agent";
 
@@ -42,7 +43,8 @@ export default defineEventHandler(async (event) => {
 
     const result = await translateWithProxy(data.zhCN);
     console.log("re", result);
-    data.en = result;
+    console.log(capitalizeFirstLetter(result));
+    data.en = capitalizeFirstLetter(result);
     const existLangCode = await Lang.findOne({ langCode });
     if (existLangCode) {
       throw createError({
